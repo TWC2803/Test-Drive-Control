@@ -378,7 +378,7 @@
 </div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwcq7GVnBJX9ngj47nmr2GJeQk2yoKfAryO1SpnZJzORZJ3y8aUdXQA6l0WMv2NNK4LDQ/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxfi5rQ0OwRBGnRZn1zlLjxoSa9_9MljrMhUW3wddZqUgdgwK2mz_EFUMEPkhN928wX/exec";
 
   // Default start time = now
   function toLocalISO(d) {
@@ -467,10 +467,15 @@
         let pct = 0;
         const tick = setInterval(() => { pct = Math.min(pct + 7, 82); bar.style.width = pct + '%'; }, 130);
         try {
+          const uploadParams = new URLSearchParams();
+          uploadParams.append('action', 'uploadFile');
+          uploadParams.append('fileName', file.name);
+          uploadParams.append('mimeType', file.type);
+          uploadParams.append('base64Data', base64);
           const res  = await fetch(SCRIPT_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action:'uploadFile', fileName:file.name, mimeType:file.type, base64Data:base64 })
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: uploadParams.toString()
           });
           const data = await res.json();
           clearInterval(tick); bar.style.width = '100%';
@@ -532,7 +537,13 @@
         licenceLink
       };
 
-      const res    = await fetch(SCRIPT_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+      const formParams = new URLSearchParams();
+      Object.entries(payload).forEach(([k, v]) => formParams.append(k, v));
+      const res    = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: formParams.toString()
+      });
       const result = await res.json();
 
       if (result.ok) {
